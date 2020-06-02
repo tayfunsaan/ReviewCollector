@@ -1,4 +1,4 @@
-<p align="center"><img src="app.jpeg" width="400"></p>
+<p align="center"><img src="app.jpeg"></p>
 
 ## Review Collector
 
