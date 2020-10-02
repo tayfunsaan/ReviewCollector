@@ -11,6 +11,7 @@ class AllCommentExport implements FromView
     public function view(): View
     {
         $data['comments'] = Comment::with('links')->get();
+
         return view('excel.all', $data);
     }
 }

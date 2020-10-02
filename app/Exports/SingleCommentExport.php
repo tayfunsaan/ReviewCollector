@@ -21,7 +21,7 @@ class SingleCommentExport implements FromView
     public function view(): View
     {
         $data['comments'] = Comment::where('link_id', $this->id);
-        switch ($this->lang){
+        switch ($this->lang) {
             case 'turkey':
                 $data['comments'] = $data['comments']->where('lang', 'turkey');
                 break;
@@ -38,7 +38,8 @@ class SingleCommentExport implements FromView
                 $data['comments'] = $data['comments']->where('lang', 'usa');
                 break;
         }
-        $data['comments'] =  $data['comments']->get();
+        $data['comments'] = $data['comments']->get();
+
         return view('excel.single', $data);
     }
 }

@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Link;
+use Illuminate\Database\Seeder;
 
 class LinksTableSeeder extends Seeder
 {

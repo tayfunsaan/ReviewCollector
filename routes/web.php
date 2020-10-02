@@ -1,8 +1,8 @@
 <?php
 
-use Goutte\Client;
-use App\Exports\SingleCommentExport;
 use App\Exports\AllCommentExport;
+use App\Exports\SingleCommentExport;
+use Goutte\Client;
 use Maatwebsite\Excel\Facades\Excel;
 
 Route::get('/', function () {
@@ -11,17 +11,20 @@ Route::get('/', function () {
 
 Route::get('links', function () {
     $data['links'] = \App\Link::all();
+
     return view('links', $data);
 })->name('links');
 
 Route::get('links-edit', function () {
     $data['links'] = \App\Link::all();
+
     return view('links_edit', $data);
 })->name('links.edit');
 
 Route::get('links-delete/{id}', function ($id) {
     \App\Models\Comment::where('link_id', $id)->delete();
     \App\Link::destroy($id);
+
     return redirect()->back();
 })->name('links.delete');
 
@@ -35,17 +38,18 @@ Route::post('links-save', function () {
     $item->england = $request['england'];
     $item->usa = $request['usa'];
     $item->save();
+
     return redirect()->back();
 })->name('links.save');
 
 Route::get('table/{id}', function ($id) {
     $data['request'] = request()->only([
-        'star', 'lang'
+        'star', 'lang',
     ]);
     $data['id'] = $id;
     $data['comments'] = \App\Models\Comment::where('link_id', $id);
-    if(isset($data['request']['lang'])){
-        switch ($data['request']['lang']){
+    if (isset($data['request']['lang'])) {
+        switch ($data['request']['lang']) {
             case 'turkey':
                 $data['comments'] = $data['comments']->where('lang', 'turkey');
                 break;
@@ -63,8 +67,8 @@ Route::get('table/{id}', function ($id) {
                 break;
         }
     }
-    if(isset($data['request']['star'])){
-        switch ($data['request']['star']){
+    if (isset($data['request']['star'])) {
+        switch ($data['request']['star']) {
             case 1:
                 $data['comments'] = $data['comments']->where('star', '1');
                 break;
@@ -83,18 +87,20 @@ Route::get('table/{id}', function ($id) {
         }
     }
     $data['comments'] = $data['comments']->get();
+
     return view('table', $data);
 })->name('table');
 
 function processStar($star, $lang)
 {
-    if($lang == 'turkey'){
+    if ($lang == 'turkey') {
         $star = str_replace('5 yıldız üzerinden ', '', $star);
-    }else{
+    } else {
         $star = str_replace(' out of 5 stars', '', $star);
     }
     $star = str_replace(',0', '', $star);
     $star = str_replace('.0', '', $star);
+
     return $star;
 }
 
@@ -102,11 +108,13 @@ function processVerified($verified)
 {
     $verified = str_replace('Doğrulanmış Alışveriş', 'Doğrulanmış', $verified);
     $verified = str_replace('Verified Purchase', 'Doğrulanmış', $verified);
+
     return $verified;
 }
 
-function changeDateLang($date){
-    $trToEn = array(
+function changeDateLang($date)
+{
+    $trToEn = [
         'Monday'    => 'Pazartesi',
         'Tuesday'   => 'Salı',
         'Wednesday' => 'Çarşamba',
@@ -144,8 +152,8 @@ function changeDateLang($date){
         'Oct'       => 'Eki',
         'Nov'       => 'Kas',
         'Dec'       => 'Ara',
-    );
-    foreach($trToEn as $en => $tr){
+    ];
+    foreach ($trToEn as $en => $tr) {
         $date = str_replace($tr, $en, $date);
     }
     //if(strpos($z, 'Mayıs') !== false && strpos($format, 'F') === false) $z = str_replace('Mayıs', 'May', $z);
@@ -154,7 +162,7 @@ function changeDateLang($date){
 
 function processDate($date, $lang)
 {
-    switch ($lang){
+    switch ($lang) {
         case 'turkey':
             $date = \DateTime::createFromFormat('d M Y', changeDateLang($date));
             break;
@@ -170,51 +178,55 @@ function processDate($date, $lang)
             $date = \DateTime::createFromFormat('M d, Y', $date);
             break;
     }
+
     return $date->format('d-m-Y');
 }
 
-function clearText($text){
-    $text = trim(preg_replace('/\s\s+/', ' ', $text));;
+function clearText($text)
+{
+    $text = trim(preg_replace('/\s\s+/', ' ', $text));
+
     return strip_tags($text);
 }
 
-function getComments($crawler, $lang, $link){
+function getComments($crawler, $lang, $link)
+{
     $emptyNode = false;
-    $crawler->filterXPath('//div[contains(@id, "cm_cr-review_list")]')->children()->each(function ($node) use($lang, &$emptyNode, $link) {
-        if($node->count()){
+    $crawler->filterXPath('//div[contains(@id, "cm_cr-review_list")]')->children()->each(function ($node) use ($lang, &$emptyNode, $link) {
+        if ($node->count()) {
             $wrongHtml = false;
             $id = $node->attr('id');
-            if(!empty($title = $node->filterXPath('//a[contains(@data-hook, "review-title")]')) && $title->count() > 0){
+            if (! empty($title = $node->filterXPath('//a[contains(@data-hook, "review-title")]')) && $title->count() > 0) {
                 $title = clearText($title->html());
-            }else{
+            } else {
                 $wrongHtml = true;
             }
-            if(!empty($body = $node->filterXPath('//span[contains(@data-hook, "review-body")]')) && $body->count() > 0){
+            if (! empty($body = $node->filterXPath('//span[contains(@data-hook, "review-body")]')) && $body->count() > 0) {
                 $body = clearText($body->html());
-            }else{
+            } else {
                 $wrongHtml = true;
             }
-            if(!empty($star = $node->filterXPath('//i[contains(@data-hook, "review-star-rating")]')) && $star->count() > 0){
+            if (! empty($star = $node->filterXPath('//i[contains(@data-hook, "review-star-rating")]')) && $star->count() > 0) {
                 $star = clearText($star->html());
-            }else{
+            } else {
                 $wrongHtml = true;
             }
-            if(!empty($name = $node->filterXPath('//span[contains(@class, "a-profile-name")]')) && $name->count() > 0){
+            if (! empty($name = $node->filterXPath('//span[contains(@class, "a-profile-name")]')) && $name->count() > 0) {
                 $name = clearText($name->html());
-            }else{
+            } else {
                 $wrongHtml = true;
             }
-            if(!empty($date = $node->filterXPath('//span[contains(@data-hook, "review-date")]')) && $date->count() > 0){
+            if (! empty($date = $node->filterXPath('//span[contains(@data-hook, "review-date")]')) && $date->count() > 0) {
                 $date = clearText($date->html());
-            }else{
+            } else {
                 $wrongHtml = true;
             }
-            if(!empty($verified = $node->filterXPath('//span[contains(@data-hook, "avp-badge")]')) && $verified->count() > 0){
+            if (! empty($verified = $node->filterXPath('//span[contains(@data-hook, "avp-badge")]')) && $verified->count() > 0) {
                 $verified = clearText($verified->html());
-            }else{
+            } else {
                 $wrongHtml = true;
             }
-            if($wrongHtml != true){
+            if ($wrongHtml != true) {
                 $item = \App\Models\Comment::firstOrNew([
                     'amazon_id' => $id,
                     'lang' => $lang,
@@ -228,17 +240,18 @@ function getComments($crawler, $lang, $link){
                 ]);
                 $item->save();
             }
-        }else{
+        } else {
             $emptyNode = true;
         }
     });
+
     return $emptyNode;
 }
 
 Route::get('update/{link}/{lang}', function ($link, $lang) {
     $link = \App\Link::where('id', $link)->firstOrFail();
     $client = new Client();
-    switch ($lang){
+    switch ($lang) {
         case 'turkey':
             $url = $link->turkey;
             break;
@@ -257,19 +270,21 @@ Route::get('update/{link}/{lang}', function ($link, $lang) {
     }
     $crawler = $client->request('GET', $url);
     getComments($crawler, $lang, $link);
-    for($i = 2; $i <= 20; $i++){
-        $tempUrl= $url.'?pageNumber='.$i;
+    for ($i = 2; $i <= 20; $i++) {
+        $tempUrl = $url.'?pageNumber='.$i;
         $crawler = $client->request('GET', $tempUrl);
         $comments = getComments($crawler, $lang, $link);
-        if($comments == true){
+        if ($comments == true) {
             break;
         }
     }
+
     return 'OK';
 })->name('update');
 
 Route::get('excel/single/{id}/{lang}', function ($id, $lang) {
     $link = \App\Link::findOrFail($id);
+
     return Excel::download(new SingleCommentExport($id, $lang), \Illuminate\Support\Str::slug($link->title).'-'.$lang.'.xlsx');
 })->name('excel.single');
 

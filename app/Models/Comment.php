@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Comment extends Model
 {
-    protected $guarded = [ 'id' ];
+    protected $guarded = ['id'];
 
     public function links()
     {
@@ -16,7 +16,7 @@ class Comment extends Model
     public function getLangTextAttribute($value)
     {
         $lang = $this->attributes['lang'];
-        switch ($lang){
+        switch ($lang) {
             case 'turkey':
                 return 'Türkiye';
                 break;
