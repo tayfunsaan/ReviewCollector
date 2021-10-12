@@ -18,6 +18,7 @@
         "maatwebsite/excel": "^3.1"
     },
     "require-dev": {
+        "roave/security-advisories": "dev-latest",
         "facade/ignition": "^2.3.6",
         "fzaninotto/faker": "^1.9.1",
         "matt-allan/laravel-code-style": "^0.6.0",
