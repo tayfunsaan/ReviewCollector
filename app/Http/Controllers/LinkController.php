@@ -15,7 +15,7 @@ class LinkController extends Controller
         return view('links', $data);
     }
 
-    public function save()
+    public function save(): RedirectResponse
     {
         $request = request()->all();
         $item = new Link();
