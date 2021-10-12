@@ -2,6 +2,8 @@
 
 use App\Exports\AllCommentExport;
 use App\Exports\SingleCommentExport;
+use App\Models\Comment;
+use App\Models\Link;
 use Goutte\Client;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -10,27 +12,27 @@ Route::get('/', function () {
 });
 
 Route::get('links', function () {
-    $data['links'] = \App\Link::all();
+    $data['links'] = Link::all();
 
     return view('links', $data);
 })->name('links');
 
 Route::get('links-edit', function () {
-    $data['links'] = \App\Link::all();
+    $data['links'] = Link::all();
 
     return view('links_edit', $data);
 })->name('links.edit');
 
 Route::get('links-delete/{id}', function ($id) {
-    \App\Models\Comment::where('link_id', $id)->delete();
-    \App\Link::destroy($id);
+    Comment::where('link_id', $id)->delete();
+    Link::destroy($id);
 
     return redirect()->back();
 })->name('links.delete');
 
 Route::post('links-save', function () {
     $request = request()->all();
-    $item = new \App\Link();
+    $item = new Link();
     $item->title = $request['title'];
     $item->turkey = $request['turkey'];
     $item->australia = $request['australia'];
@@ -47,7 +49,7 @@ Route::get('table/{id}', function ($id) {
         'star', 'lang',
     ]);
     $data['id'] = $id;
-    $data['comments'] = \App\Models\Comment::where('link_id', $id);
+    $data['comments'] = Comment::where('link_id', $id);
     if (isset($data['request']['lang'])) {
         switch ($data['request']['lang']) {
             case 'turkey':
@@ -227,7 +229,7 @@ function getComments($crawler, $lang, $link)
                 $wrongHtml = true;
             }
             if ($wrongHtml != true) {
-                $item = \App\Models\Comment::firstOrNew([
+                $item = Comment::firstOrNew([
                     'amazon_id' => $id,
                     'lang' => $lang,
                     'title' => $title,
@@ -249,7 +251,7 @@ function getComments($crawler, $lang, $link)
 }
 
 Route::get('update/{link}/{lang}', function ($link, $lang) {
-    $link = \App\Link::where('id', $link)->firstOrFail();
+    $link = Link::where('id', $link)->firstOrFail();
     $client = new Client();
     switch ($lang) {
         case 'turkey':
@@ -283,7 +285,7 @@ Route::get('update/{link}/{lang}', function ($link, $lang) {
 })->name('update');
 
 Route::get('excel/single/{id}/{lang}', function ($id, $lang) {
-    $link = \App\Link::findOrFail($id);
+    $link = Link::findOrFail($id);
 
     return Excel::download(new SingleCommentExport($id, $lang), \Illuminate\Support\Str::slug($link->title).'-'.$lang.'.xlsx');
 })->name('excel.single');
