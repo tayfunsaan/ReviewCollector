@@ -12,7 +12,7 @@ class LinksTableSeeder extends Seeder
      *
      * @return void
      */
-    public function run()
+    public function run(): void
     {
         $item = new Link();
         $item->title = 'Apple Airpods with Charging Case';
